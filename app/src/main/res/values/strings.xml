@@ -2,4 +2,13 @@
     <string name="app_name">Matrix</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_main2">Main2Activity</string>
+    <string name="rowsString">Select No of Rows in Matrix</string>
+    <string name="error_alert_dialog_columns">Select No of Columns Required</string>
+    <string name="error_alert_dialog_rows">Select No of Rows Required</string>
+    <string name="error_alert_dialog_rows_columns">Please Select No of Rows and Columns</string>
+    <string name="columnsString">Select No of Columns in Matrix</string>
+    <string name="btnContinue">Continue</string>
+    <string name="btnInputData">Input Data</string>
+    <string name="selectNumber">Select Number</string>
+
 </resources>

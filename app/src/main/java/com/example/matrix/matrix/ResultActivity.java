@@ -1,13 +1,14 @@
 package com.example.matrix.matrix;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
-import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.NumberPicker;
@@ -16,71 +17,39 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Random;
 
-public class Main2Activity extends AppCompatActivity {
-
-    NumberPicker picker1, picker2;
-    Button inputBtn;
-    TextView matrixConfig;
-
-    int columns = 1, rows = 1;
-
+public class ResultActivity extends AppCompatActivity {
+    private TableLayout tableLayout;
+    private TextView matrixConfig;
+    private int columns = 1;
+    private int rows = 1;
     private int cost_limit = 40;
+    private ArrayList<ColumnEntity> entities;
+    private Random randomNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main2);
+        setContentView(R.layout.activity_result);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-        fab.setVisibility(View.GONE);
-
-        picker1 = (NumberPicker) findViewById(R.id.numberPicker1);
-        picker1.setMinValue(1);
-        picker1.setMaxValue(10);
-        picker1.setWrapSelectorWheel(false);
-        picker1.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
-            @Override
-            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-                columns = newVal;
-            }
-        });
-
-        picker2 = (NumberPicker) findViewById(R.id.numberPicker2);
-        picker2.setMinValue(1);
-        picker2.setMaxValue(10);
-        picker2.setWrapSelectorWheel(false);
-        picker2.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
-            @Override
-            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-                rows = newVal;
-            }
-        });
-
-        inputBtn = (Button) findViewById(R.id.input_btn);
-        inputBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                matrixConfig.setText("Rows : " + columns + " Cols : " + rows);
-                fillTable(columns, rows, (TableLayout) findViewById(R.id.tableLayout1));
-            }
-        });
-
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getIntent().getExtras() != null) {
+            columns = getIntent().getExtras().getInt("no_of_columns");
+            rows = getIntent().getExtras().getInt("no_of_rows");
+        }
         matrixConfig = (TextView) findViewById(R.id.matrix_config);
-        findViewById(R.id.tableLayout1).setVisibility(View.GONE);
+        tableLayout = (TableLayout) findViewById(R.id.tableLayout);
+        tableLayout.setVisibility(View.GONE);
         findViewById(R.id.cost_txt).setVisibility(View.GONE);
         findViewById(R.id.path_txt).setVisibility(View.GONE);
+        entities = new ArrayList<>();
+        randomNumber = new Random();
+        matrixConfig.setText("Rows : " + columns + " Cols : " + rows);
+        fillTable(columns, rows, tableLayout);
 
-        findViewById(R.id.calculate_btn).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.find_path_btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getPath();
@@ -89,38 +58,33 @@ public class Main2Activity extends AppCompatActivity {
     }
 
     private void fillTable(final int n, int m, TableLayout table) {
-        findViewById(R.id.tableLayout1).setVisibility(View.VISIBLE);
+        tableLayout.setVisibility(View.VISIBLE);
         findViewById(R.id.cost_txt).setVisibility(View.VISIBLE);
         findViewById(R.id.path_txt).setVisibility(View.VISIBLE);
-
-        int arr[][] = new int[n][m];
         table.removeAllViews();
         for (int i = 0; i < n; i++) {
             TableRow row = new TableRow(this);
             row.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-
             for (int j = 0; j < m; j++) {
                 EditText edit = new EditText(this);
                 edit.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_NUMBER_FLAG_SIGNED);
+                edit.setPadding(24, 16, 24, 16);
                 edit.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
-                edit.setText(arr[i][j] + "");
+                edit.setText(String.valueOf(randomNumber.nextInt(10 - 1)+1));
                 row.addView(edit);
             }
             table.addView(row);
         }
     }
 
-    ArrayList<ColumnEntity> entities = new ArrayList<>();
 
     private void getPath() {
         entities.clear();
-        TableLayout tb = (TableLayout) findViewById(R.id.tableLayout1);
-        for (int i = 0; i < tb.getChildCount(); i++) {
-            View child = tb.getChildAt(i);
+        for (int i = 0; i < tableLayout.getChildCount(); i++) {
+            View child = tableLayout.getChildAt(i);
             if (child instanceof TableRow) {
                 TableRow row = (TableRow) child;
                 for (int x = 0; x < row.getChildCount(); x++) {
-
                     if (entities.size() - 1 <= x) {
                         entities.add(new ColumnEntity());
                     }
@@ -153,12 +117,14 @@ public class Main2Activity extends AppCompatActivity {
                 }
             }
             total_cost += step_cost;
+            if(step_cost>0)
+            path.add(String.valueOf(step_cost));
             step_cost = 0;
         }
 
         if (total_cost < cost_limit) {
-            ((TextView) findViewById(R.id.cost_txt)).setText(total_cost + "");
-            ((TextView) findViewById(R.id.path_txt)).setText(path.toString() + "");
+            ((TextView) findViewById(R.id.cost_txt)).setText("Cost : " + total_cost + "");
+            ((TextView) findViewById(R.id.path_txt)).setText("Path : " + path.toString() + "");
         } else {
             setInvalidData();
         }
@@ -167,5 +133,17 @@ public class Main2Activity extends AppCompatActivity {
     private void setInvalidData() {
         ((TextView) findViewById(R.id.cost_txt)).setText("Invalid Data");
         ((TextView) findViewById(R.id.path_txt)).setText("Invalid Data");
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            finish();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

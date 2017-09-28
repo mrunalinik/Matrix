@@ -3,7 +3,7 @@ package com.example.matrix.matrix;
 import java.util.ArrayList;
 
 /**
- * Created by mkoritala on 22-09-2017.
+ * Created by mrunalinikoritala on 22-09-2017.
  */
 
 public class ColumnEntity {
